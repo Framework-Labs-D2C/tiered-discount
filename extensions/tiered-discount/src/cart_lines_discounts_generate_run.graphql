@@ -1,0 +1,35 @@
+query CartInput {
+  cart {
+    lines {
+      gifted: attribute(key: "_Gifted") {
+        value
+      }
+      id
+      quantity
+      cost {
+        subtotalAmount {
+          amount
+        }
+      }
+      merchandise {
+        __typename
+        ... on ProductVariant {
+          id
+          product {
+            id
+          }
+        }
+      }
+    }
+  }
+  discount {
+    __typename
+    discountClasses
+    metafield(
+      namespace: "$app:platter-tier-discounts"
+      key: "function-configuration"
+    ) {
+      value
+    }
+  }
+}

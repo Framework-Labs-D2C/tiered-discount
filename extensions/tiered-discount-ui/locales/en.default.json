@@ -1,0 +1,76 @@
+{
+  "name": "Platter Bundle Discounts",
+  "description": "Configure quantity-based bundle discounts with advanced targeting options.",
+  "title": "Bundle Discounts",
+  "loading": "Loading...",
+  "validation": {
+    "fixErrors": "Please fix the validation errors below before saving.",
+    "savingDisabled": "Saving is disabled until all validation errors are resolved."
+  },
+
+  "productAttributes": {
+    "title": "Product Attributes",
+    "onlyApplyToBundle": "Apply discount only to products added from Bundle Page",
+    "lineItemPropertyNote": "Note: Only products with the {{property}} line item property will be eligible for bundle discounts.",
+    "edit": "Edit",
+    "done": "Done",
+    "lineItemPropertyLabel": "Line Item Property",
+    "lineItemPropertyPlaceholder": "_bundle_id"
+  },
+
+  "productTargeting": {
+    "title": "Product Targeting",
+    "applyDiscountTo": "Apply discount to",
+    "allProducts": "All products",
+    "specificCollections": "Specific collections",
+    "specificProducts": "Specific products",
+    "addCollections": "Add Collections",
+    "selectProducts": "Select Products"
+  },
+
+  "cartRequirements": {
+    "title": "Cart Requirements",
+    "requireMinAmount": "Require minimum cart amount",
+    "minCartAmount": "Minimum Cart Amount"
+  },
+
+  "discountMessage": {
+    "title": "Discount Message",
+    "description": "Note: This will be displayed on the cart page and checkout. Use [discount] as a placeholder for the discount amount.",
+    "placeholder": "e.g., BUNDLE SPECIAL - Save [discount]!",
+    "previewTitle": "Preview examples:",
+    "tierPreview": "Tier {{tier}}: {{message}}"
+  },
+
+  "discountTiers": {
+    "title": "Discount Tiers",
+    "addTier": "Add Tier",
+    "minQuantity": "Min Quantity",
+    "maxQuantity": "Max Quantity",
+    "discountType": "Discount Type",
+    "percentage": "Percentage",
+    "flatPrice": "Flat Price",
+    "totalPrice": "Total Price",
+    "discountPercent": "Discount %",
+    "preview": {
+      "flat": "Buy {{min}}{{range}} items for ${{price}} total",
+      "percentage": "Buy {{min}}{{range}} items, get {{percent}}% off each"
+    }
+  },
+
+  "buttons": {
+    "save": "Save",
+    "reset": "Reset",
+    "remove": "Remove"
+  },
+
+  "errors": {
+    "overlappingTiers": "Tier {{current}} overlaps with Tier {{other}}",
+    "maxLessThanMin": "Max quantity must be greater than or equal to min quantity",
+    "flatPriceRequired": "Flat price must be greater than 0",
+    "percentageRange": "Discount percentage must be between 0-100%",
+    "overlappingTier": "Overlapping tier",
+    "maxMustBeGreaterOrEqual": "Max must be greater than or equal to min",
+    "percentageBetween": "Percentage must be between 0-100"
+  }
+}
