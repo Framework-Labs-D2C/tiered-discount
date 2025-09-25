@@ -17,7 +17,6 @@ import {
   Divider,
   Banner,
   Select,
-  Checkbox,
   Link,
   MoneyField,
   ChoiceList
@@ -99,7 +98,6 @@ function App() {
                         i18n={i18n}
                       />
                     ))}
-
                     <Button onClick={addTier} disabled={hasValidationErrors}>
                       {i18n.translate("discountTiers.addTier")}
                     </Button>
@@ -125,7 +123,6 @@ function BundleTierRow({ tier, index, onUpdate, onRemove, validation, i18n }) {
       <BlockStack gap="base">
         <BlockStack gap="base">
           <BlockStack gap="base">
-            <Text>{i18n.translate("discountTiers.tresholdType")}</Text>
             <ChoiceList
               choices={[
                 {label: 'Minimum quantity of items', id: 'qty'},
@@ -162,6 +159,7 @@ function BundleTierRow({ tier, index, onUpdate, onRemove, validation, i18n }) {
             )}
 
             <BlockStack gap="base">
+              <Text>{i18n.translate("discountTiers.products")}</Text>
               <InlineStack gap="base" blockAlignment="end">
                 <Button onClick={() => {tier.addProduct(tier)}}>{i18n.translate("productTargeting.selectProducts")}</Button>
               </InlineStack>
@@ -234,21 +232,6 @@ function BundleTierRow({ tier, index, onUpdate, onRemove, validation, i18n }) {
           )}
         </BlockStack>
 
-        <Text>
-          Preview: {isFlat
-            ? i18n.translate("discountTiers.preview.flat", {
-                min: tier.min,
-                range: tier.max !== tier.min ? `-${tier.max}` : '',
-                price: tier.flatPrice || 0
-              })
-            : i18n.translate("discountTiers.preview.percentage", {
-                min: tier.min,
-                range: tier.max !== tier.min ? `-${tier.max}` : '',
-                percent: tier.percentage
-              })
-          }
-        </Text>
-
         {/* Errors */}
         {hasError && (
           <Banner tone="critical">
@@ -272,7 +255,6 @@ function BundleTierRow({ tier, index, onUpdate, onRemove, validation, i18n }) {
 
 function useExtensionData() {
   const { applyMetafieldChange, data, resourcePicker, i18n, query } = useApi(TARGET);
-  console.log('data', data);
 
   const metafieldConfig = useMemo(
     () =>
@@ -306,19 +288,15 @@ function useExtensionData() {
     })
   }
 
-  const [tiers, setTiers] = useState(metafieldConfig.tiers || [{ tresholdType: 'qty', target: 999, discount: 0, discountType: 'percentage', discountMessage: 'get free product', products: [], addProduct: addProduct, removeProduct: removeProduct }]);
-  const [initialTiers, setInitialTiers] = useState(metafieldConfig.tiers || [{ tresholdType: 'qty', target: 999, discount: 0, discountType: 'percentage', discountMessage: 'get free product', products: [], addProduct: addProduct, removeProduct: removeProduct }]);
+  const [tiers, setTiers] = useState(metafieldConfig.tiers || [{ tresholdType: 'qty', quantity: 0, amount: 0, flatPrice: 0, percentage: 0, discountType: 'percentage', discountMessage: '', products: [], addProduct: addProduct, removeProduct: removeProduct }]);
+  const [initialTiers, setInitialTiers] = useState(metafieldConfig.tiers || [{ tresholdType: 'qty', quantity: 0, amount: 0, flatPrice: 0, percentage: 0, discountType: 'percentage', discountMessage: '', products: [], addProduct: addProduct, removeProduct: removeProduct }]);
 
   const validationErrors = useMemo(() => {
     return tiers.map((tier, index) => {
       const errors = [];
-      let minError = '';
-      let maxError = '';
-      let percentageError = '';
-      let flatPriceError = '';
+  
 
-
-      return { errors, minError, maxError, percentageError, flatPriceError };
+      return { errors };
     });
   }, [tiers, i18n]);
 
@@ -326,12 +304,14 @@ function useExtensionData() {
     const lastTier = tiers[tiers.length - 1];
     setTiers([...tiers, {
       tresholdType: lastTier ? lastTier.tresholdType : 'qty',
-      target: 0,
-      discount: 0,
+      quantity: 0,
+      amount: 0,
+      percentage: 0,
+      flatPrice: 0,
       discountType: 'percentage',
       addProduct: addProduct,
       removeProduct: removeProduct,
-      discountMessage: 'tier discount',
+      discountMessage: '',
       products: []
     }]);
   };
@@ -358,30 +338,26 @@ function useExtensionData() {
         return;
       }
 
-      console.log('hasValidationErrors',hasValidationErrors);
-
-      const configData = {
-        tiers: tiers
+       const configData = {
+        tiers: tiers.map(tier => {
+          const { addProduct, removeProduct, products, ...tierData } = tier;
+          return {
+            ...tierData,
+            products: products ? products.map(product => ({ 
+              id: product.id, 
+              title: product.title,
+            })) : []
+          };
+        })
       };
-
-      console.log('configData',configData);
 
       const result = await applyMetafieldChange({
         type: "updateMetafield",
         namespace: METAFIELD_NAMESPACE,
         key: METAFIELD_KEY,
-        value: "asdasd",
-        valueType: "string",
+        value: JSON.stringify(configData),
+        valueType: "json",
       });
-
-      console.log('payload',{
-        type: "updateMetafield",
-        namespace: METAFIELD_NAMESPACE,
-        key: METAFIELD_KEY,
-        value: "testdata",
-        valueType: "string",
-      });
-      console.log('result',result);
 
       if (result.type === 'success') {
         console.log('Metafield saved successfully');
@@ -414,7 +390,7 @@ function useExtensionData() {
 
 function parseMetafield(value) {
   const DEFAULT_CONFIG = {
-    tiers: [{ tresholdType: 'qty', target: 999, percentage: 0, discountType: 'percentage', flatPrice: 0 }],
+    tiers: [{ tresholdType: 'qty', quantity: 0, amount: 0, flatPrice: 0, percentage: 0, discountType: 'percentage', discountMessage: 'get free product', products: [] }],
   }
 
   try {
@@ -422,11 +398,18 @@ function parseMetafield(value) {
 
     if (parsed.tiers && Array.isArray(parsed.tiers)) {
       return {
-        tiers: parsed.tiers.map(tier => ({
-          ...tier,
-          discountType: tier.discountType || 'percentage',
-          flatPrice: tier.flatPrice || 0
-        })),
+        tiers: parsed.tiers.map(tier => {
+          const { productIds, ...tierData } = tier;
+          return {
+            ...tierData,
+            discountType: tier.discountType || 'percentage',
+            flatPrice: tier.flatPrice || 0,
+            products: tier.products ? tier.products.map(product => ({ 
+              id: product.id || product, 
+              title: product.title || `Product ${(product.id || product).split('/').pop()}`,
+            })) : []
+          };
+        }),
       };
     }
 

@@ -1,6 +1,5 @@
 import {
   DiscountClass,
-  OrderDiscountSelectionStrategy,
   ProductDiscountSelectionStrategy,
   CartInput,
   CartLinesDiscountsGenerateRunResult,
@@ -18,7 +17,7 @@ export function cartLinesDiscountsGenerateRun(
   }
 
   let metafieldValue;
-  console.log(JSON.stringify(input), input);
+
   try {
     metafieldValue = JSON.parse(input?.discount?.metafield?.value ?? '{}');
   } catch (error) {
@@ -27,13 +26,6 @@ export function cartLinesDiscountsGenerateRun(
   }
 
   const configuration = metafieldValue.tiers || [];
-
-  console.log(
-    'configuration',
-    JSON.stringify({
-      tiers: configuration,
-    })
-  );
 
   const items = input.cart.lines;
 
@@ -64,10 +56,15 @@ export function cartLinesDiscountsGenerateRun(
     return { operations: [] };
   }
 
-  const operations = [];
+  let operations = {
+    productDiscountsAdd: {
+      candidates: [],
+      selectionStrategy: ProductDiscountSelectionStrategy.All,
+    },
+  };
 
   configuration.map((tier) => {
-    if (tier.products.length === 0) {
+    if (!tier.products || tier.products.length === 0) {
       return EMPTY_DISCOUNT;
     }
     const productIds = tier.products.map((p: any) => p.id);
@@ -77,31 +74,46 @@ export function cartLinesDiscountsGenerateRun(
       }
       return false;
     });
-    console.log(JSON.stringify(eligibleItems), 'eligibleItems');
-    // if (hasProductDiscountClass) {
-    //   operations.push({
-    //     productDiscountsAdd: {
-    //       candidates: [
-    //         {
-    //           message: tier.discountMessage,
-    //           targets: [
-    //             {
-    //               cartLine: {
-    //                 id: maxCartLine.id,
-    //               },
-    //             },
-    //           ],
-    //           value: {
-    //             percentage: {
-    //               value: 20,
-    //             },
-    //           },
-    //         },
-    //       ],
-    //       selectionStrategy: ProductDiscountSelectionStrategy.First,
-    //     },
-    //   });
-    // }
+
+    if (eligibleItems.length > 0 && hasProductDiscountClass) {
+      let thresholdMet = false;
+
+      if (tier.tresholdType === 'amount') {
+        const totalAmount = eligibleItems.reduce(
+          (sum, item) => sum + parseFloat(item.cost.subtotalAmount.amount),
+          0
+        );
+        thresholdMet = totalAmount >= (tier.amount || 0);
+      } else if (tier.tresholdType === 'qty') {
+        const totalQuantity = eligibleItems.reduce(
+          (sum, item) => sum + item.quantity,
+          0
+        );
+        thresholdMet = totalQuantity >= (tier.quantity || 0);
+      }
+
+      if (thresholdMet) {
+        eligibleItems.forEach((item) => {
+          const discountValue =
+            tier.discountType === 'percentage'
+              ? { percentage: { value: tier.percentage || 0 } }
+              : { fixedAmount: { amount: tier.flatPrice || 0 } };
+
+          operations.productDiscountsAdd.candidates.push({
+            message: tier.discountMessage || 'Tier discount applied',
+            targets: [
+              {
+                cartLine: {
+                  id: item.id,
+                  quantity: 1,
+                },
+              },
+            ],
+            value: discountValue,
+          });
+        });
+      }
+    }
   });
 
   return {
