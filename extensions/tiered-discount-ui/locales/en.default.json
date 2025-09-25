@@ -1,21 +1,11 @@
 {
-  "name": "Platter Bundle Discounts",
-  "description": "Configure quantity-based bundle discounts with advanced targeting options.",
-  "title": "Bundle Discounts",
+  "name": "Platter Tiered Discounts",
+  "description": "Configure quantity-based or amount tiered discounts with advanced targeting options.",
+  "title": "Tiered Discounts",
   "loading": "Loading...",
   "validation": {
     "fixErrors": "Please fix the validation errors below before saving.",
     "savingDisabled": "Saving is disabled until all validation errors are resolved."
-  },
-
-  "productAttributes": {
-    "title": "Product Attributes",
-    "onlyApplyToBundle": "Apply discount only to products added from Bundle Page",
-    "lineItemPropertyNote": "Note: Only products with the {{property}} line item property will be eligible for bundle discounts.",
-    "edit": "Edit",
-    "done": "Done",
-    "lineItemPropertyLabel": "Line Item Property",
-    "lineItemPropertyPlaceholder": "_bundle_id"
   },
 
   "productTargeting": {
@@ -43,19 +33,16 @@
   },
 
   "discountTiers": {
-    "title": "Discount Tiers",
+    "title": "Customer buys",
     "addTier": "Add Tier",
-    "minQuantity": "Min Quantity",
-    "maxQuantity": "Max Quantity",
+    "quantity": "Quantity",
+    "amount": "Amount",
+    "products": "Products",
     "discountType": "Discount Type",
     "percentage": "Percentage",
     "flatPrice": "Flat Price",
     "totalPrice": "Total Price",
-    "discountPercent": "Discount %",
-    "preview": {
-      "flat": "Buy {{min}}{{range}} items for ${{price}} total",
-      "percentage": "Buy {{min}}{{range}} items, get {{percent}}% off each"
-    }
+    "discountPercent": "Discount %"
   },
 
   "buttons": {
