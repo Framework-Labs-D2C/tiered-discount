@@ -25,6 +25,13 @@ export function cartLinesDiscountsGenerateRun(
     return EMPTY_DISCOUNT;
   }
 
+  const itemsWioutGWP = input.cart.lines.filter((line) => !line.gifted);
+
+  const cartTotal = itemsWioutGWP.reduce(
+    (sum, item) => sum + parseFloat(item.cost.subtotalAmount.amount),
+    0
+  );
+
   const configuration = metafieldValue.tiers || [];
 
   const items = input.cart.lines;
@@ -79,17 +86,9 @@ export function cartLinesDiscountsGenerateRun(
       let thresholdMet = false;
 
       if (tier.tresholdType === 'amount') {
-        const totalAmount = eligibleItems.reduce(
-          (sum, item) => sum + parseFloat(item.cost.subtotalAmount.amount),
-          0
-        );
-        thresholdMet = totalAmount >= (tier.amount || 0);
+        thresholdMet = cartTotal >= (tier.amount || 0);
       } else if (tier.tresholdType === 'qty') {
-        const totalQuantity = eligibleItems.reduce(
-          (sum, item) => sum + item.quantity,
-          0
-        );
-        thresholdMet = totalQuantity >= (tier.quantity || 0);
+        thresholdMet = itemsWioutGWP.length >= (tier.quantity || 0);
       }
 
       if (thresholdMet) {
